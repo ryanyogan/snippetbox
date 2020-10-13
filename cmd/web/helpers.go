@@ -23,13 +23,15 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
-func (app *application) addDefaultDate(td *templateData, r *http.Request) *templateData {
+func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
 	if td == nil {
 		td = &templateData{}
 	}
 
 	td.CurrentYear = time.Now().Year()
 	td.Flash = app.session.PopString(r, "flash")
+	td.IsAuthenticated = app.isAuthenticated(r)
+
 	return td
 }
 
@@ -41,11 +43,15 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 
 	buf := new(bytes.Buffer)
 
-	err := ts.Execute(buf, app.addDefaultDate(td, r))
+	err := ts.Execute(buf, app.addDefaultData(td, r))
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
 	buf.WriteTo(w)
+}
+
+func (app *application) isAuthenticated(r *http.Request) bool {
+	return app.session.Exists(r, "authenticatedUserID")
 }
