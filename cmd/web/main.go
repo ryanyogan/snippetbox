@@ -12,16 +12,29 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golangcollege/sessions"
+	"yogan.dev/snippetbox/pkg/models"
 	"yogan.dev/snippetbox/pkg/models/mysql"
 )
+
+type snippets interface {
+	Insert(string, string, string) (int, error)
+	Get(int) (*models.Snippet, error)
+	Latest() ([]*models.Snippet, error)
+}
+
+type users interface {
+	Authenticate(string, string) (int, error)
+	Insert(string, string, string) error
+	Get(int) (*models.User, error)
+}
 
 type application struct {
 	errorLog      *log.Logger
 	infoLog       *log.Logger
 	session       *sessions.Session
-	snippets      *mysql.SnippetModel
+	snippets      snippets
 	templateCache map[string]*template.Template
-	users         *mysql.UserModel
+	users         users
 }
 
 type contextKey string
