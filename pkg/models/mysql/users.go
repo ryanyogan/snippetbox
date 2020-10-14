@@ -69,5 +69,16 @@ func (m *UserModel) Authenticate(email, password string) (int, error) {
 
 // Get takes a user ID and returns that user from the db layer
 func (m *UserModel) Get(id int) (*models.User, error) {
-	return nil, nil
+	u := &models.User{}
+
+	query := "SELECT id, name, email, created, active FROM users WHERE id = ?"
+	err := m.DB.QueryRow(query, id).Scan(&u.ID, &u.Name, &u.Email, &u.Created, &u.Active)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		}
+		return nil, err
+	}
+
+	return u, nil
 }
